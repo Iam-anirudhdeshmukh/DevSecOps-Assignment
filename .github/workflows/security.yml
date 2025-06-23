@@ -1,4 +1,4 @@
-name: 🔐 Security Pipeline
+name: Security Pipeline Scan
 
 on:
   push:
