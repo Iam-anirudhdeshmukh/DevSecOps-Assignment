@@ -21,21 +21,27 @@ jobs:
         language: [python]
     steps:
       - uses: actions/checkout@v4
+        # Checkout repository to the runner
+
       - uses: github/codeql-action/init@v3
         with:
           languages: ${{ matrix.language }}
+        # Initialize CodeQL with the selected language
+
+      - name: Perform CodeQL autobuild
+        uses: github/codeql-action/autobuild@v3
+        # Automatically build the code for analysis
+
       - uses: github/codeql-action/analyze@v3
-      - uses: github/codeql-action/upload-sarif@v3
-        with:
-          sarif_file: codeql-results.sarif
+        # Analyze the code and upload SARIF results automatically
 
   gitleaks:
     name: Secret Scan (Gitleaks)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        # Checkout repo for scanning
 
-      # Run Gitleaks Secret Scan (JSON only)
       - name: Run Gitleaks Secret Scan
         run: |
           GITLEAKS_VERSION=$(curl --silent "https://api.github.com/repos/gitleaks/gitleaks/releases/latest" | jq -r .tag_name)
@@ -44,15 +50,15 @@ jobs:
           tar -xzf gitleaks.tar.gz -C gitleaks-bin
           chmod +x gitleaks-bin/gitleaks
           ./gitleaks-bin/gitleaks detect --source=. --report-format=json --report-path=gitleaks-results.json || true
+        # Download and run Gitleaks secret scan, outputting JSON report
 
-      # Upload Gitleaks JSON report
       - name: Upload Gitleaks Report
         uses: actions/upload-artifact@v4
         with:
           name: gitleaks-results
           path: gitleaks-results.json
+        # Upload the secret scan report as an artifact
 
-      # Gitleaks Job Summary
       - name: Gitleaks Job Summary
         if: always()
         run: |
@@ -65,14 +71,15 @@ jobs:
           else
             echo "✅ No secrets detected by Gitleaks." >> $GITHUB_STEP_SUMMARY
           fi
+        # Summarize secret scan findings in the job summary
 
   trivy-deps:
     name: Dependency Scan (Trivy)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        # Checkout repo to scan dependencies
 
-      # Install Trivy for Dependency Scanning
       - name: Install Trivy
         run: |
           sudo apt-get update
@@ -81,21 +88,21 @@ jobs:
           echo "deb https://aquasecurity.github.io/trivy-repo/deb $(lsb_release -sc) main" | sudo tee /etc/apt/sources.list.d/trivy.list
           sudo apt-get update
           sudo apt-get install trivy -y
+        # Install Trivy scanner on runner
 
-      # Run Trivy dependency scan specifically on Python dependencies (requirements.txt)
       - name: Run Trivy Dependency Scan
         run: |
           mkdir -p trivy-reports
-          # Scan only requirements.txt file (Python deps)
           trivy fs requirements.txt --scanners vuln --vuln-type library --format json --output trivy-reports/trivy-results.json || true
           trivy fs requirements.txt --scanners vuln --vuln-type library --format table --output trivy-reports/trivy-report.txt || true
+        # Scan Python dependencies for vulnerabilities
 
-      # Upload Trivy Reports
       - name: Upload Trivy Reports
         uses: actions/upload-artifact@v4
         with:
           name: trivy-reports
           path: trivy-reports
+        # Upload Trivy scan reports
 
   trivy-image:
     name: Docker Image Scan (Trivy)
@@ -103,17 +110,17 @@ jobs:
     needs: [trivy-deps]
     steps:
       - uses: actions/checkout@v4
+        # Checkout repo for Docker build context
 
-      # Set up Docker Buildx for multi-platform builds if needed
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
+        # Setup Docker Buildx for advanced build features
 
-      # Build Docker Image (with dummy API key for CI)
       - name: Build Docker Image
         run: |
           docker build --build-arg TMDB_V3_API_KEY=dummy_key -t my-app:latest .
+        # Build the Docker image with dummy API key
 
-      # Install Trivy for Container Scan
       - name: Install Trivy
         run: |
           sudo apt-get update
@@ -122,17 +129,33 @@ jobs:
           echo "deb https://aquasecurity.github.io/trivy-repo/deb $(lsb_release -sc) main" | sudo tee /etc/apt/sources.list.d/trivy.list
           sudo apt-get update
           sudo apt-get install trivy -y
+        # Install Trivy for container scanning
 
-      # Scan Docker Image with Trivy
       - name: Run Trivy Container Image Scan
         run: |
           mkdir -p trivy-container-reports
           trivy image --format json --output trivy-container-reports/image-results.json my-app:latest || true
           trivy image --format table --output trivy-container-reports/image-report.txt my-app:latest || true
+        # Scan the built Docker image for vulnerabilities
 
-      # Upload Container Scan Results
       - name: Upload Trivy Container Reports
         uses: actions/upload-artifact@v4
         with:
           name: trivy-container-reports
           path: trivy-container-reports
+        # Upload Docker image vulnerability scan reports
+      - name: Trivy Container Job Summary
+        if: always()
+        run: |
+          if [ -s trivy-container-reports/image-results.json ]; then
+            echo "### 🐳 Docker Image Vulnerabilities 🐳" >> $GITHUB
+            _STEP_SUMMARY
+            echo "| Vulnerability ID | Package | Installed Version | Fixed Version | Severity | Type | Description |" >> $GITHUB_STEP_SUMMARY
+            echo "|------------------|---------|------------------|----------------|----------|------|-------------|" >> $GITHUB_STEP_SUMMARY
+            jq -r '.Results[].Vulnerabilities[] | 
+              "| \(.VulnerabilityID) | \(.PkgName) | \(.InstalledVersion) | \(.FixedVersion // "N/A") | \(.Severity) | \(.Type) | \(.Description) |"' trivy
+            -container-reports/image-results.json >> $GITHUB_STEP_SUMMARY
+          else
+            echo "No vulnerabilities detected in Docker image." >> $GITHUB_STEP_SUMMARY
+          fi
+        # Summarize Docker image scan findings in the job summary
