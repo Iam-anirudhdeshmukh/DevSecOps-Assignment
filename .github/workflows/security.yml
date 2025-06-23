@@ -19,7 +19,7 @@ jobs:
 
     strategy:
       matrix:
-        language: [python]  # fixed from javascript to python for your repo
+        language: [python]
 
     steps:
       - uses: actions/checkout@v4
@@ -28,20 +28,89 @@ jobs:
           languages: ${{ matrix.language }}
       - uses: github/codeql-action/analyze@v2
 
-  eslint:
-    name: ESLint Security Check
+  gitleaks:
+    name: Secret Scan (Gitleaks)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: gitleaks/gitleaks-action@v2
         with:
-          node-version: 18
-      - run: npm ci || npm install
-      - run: npx eslint . --ext .js,.ts,.tsx,.jsx -f json -o eslint-results.json
+          args: detect --source=. --report-format=json --report-path=gitleaks-results.json
       - uses: actions/upload-artifact@v4
         with:
-          name: eslint-results
-          path: eslint-results.json
+          name: gitleaks-results
+          path: gitleaks-results.json
+
+  trivy-deps:
+    name: Dependency Scan (Trivy)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Trivy
+        run: |
+          sudo apt-get install -y wget
+          wget -qO- https://github.com/aquasecurity/trivy/releases/latest/download/trivy_0.51.1_Linux-64bit.deb > trivy.deb
+          sudo dpkg -i trivy.deb
+      - name: Scan Project Dependencies
+        run: |
+          mkdir -p trivy-reports
+          trivy fs . --format json --output trivy-reports/trivy-results.json
+          trivy fs . --format table --output trivy-reports/trivy-report.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: trivy-reports
+          path: trivy-reports/
+
+  trivy-image:
+    name: Docker Image Scan (Trivy)
+    runs-on: ubuntu-latest
+    needs: [trivy-deps]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build Docker image
+        run: docker build -t secure-app:latest .
+      - name: Install Trivy
+        run: |
+          wget -qO- https://github.com/aquasecurity/trivy/releases/latest/download/trivy_0.51.1_Linux-64bit.deb > trivy.deb
+          sudo dpkg -i trivy.deb
+      - name: Scan Docker Image
+        run: |
+          mkdir -p trivy-container-reports
+          trivy image secure-app:latest --format json --output trivy-container-reports/image-results.json
+          trivy image secure-app:latest --format table --output trivy-container-reports/image-report.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: trivy-container-reports
+          path: trivy-container-reports/
+name: 🔐 Security Pipeline
+
+on:
+  push:
+    branches: [main, security-pipeline]
+  pull_request:
+    branches: [main, security-pipeline]
+  schedule:
+    - cron: '0 0 * * 0' # every Sunday at midnight UTC
+
+jobs:
+  codeql:
+    name: CodeQL Scan
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+
+    strategy:
+      matrix:
+        language: [python]
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: github/codeql-action/init@v2
+        with:
+          languages: ${{ matrix.language }}
+      - uses: github/codeql-action/analyze@v2
 
   gitleaks:
     name: Secret Scan (Gitleaks)
