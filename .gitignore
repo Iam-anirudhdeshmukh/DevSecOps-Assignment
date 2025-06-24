@@ -1,9 +1,1 @@
-__pycache__/
-*.pyc
-.env
-.trivy-reports/
-.trivy-container-reports/
-results/
-.bandit
-gitleaks-results.json
-bandit-results.json
+

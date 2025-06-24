@@ -1,4 +1,0 @@
-exclude:
-  - tests/
-skips:
-  - B101  # allow assert in tests
