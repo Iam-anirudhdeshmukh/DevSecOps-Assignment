@@ -7,26 +7,34 @@ on:
   pull_request:
 
 jobs:
-  sonarQube:
+  scan:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
-          python-version: 3.x
+          python-version: '3.11'
 
-      - name: Install dependencies
+      - name: Install Python Dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install pytest pytest-cov coverage sonar-scanner
+          pip install pytest pytest-cov coverage
 
-      - name: Run tests and generate coverage
+      - name: Run Tests and Generate Coverage
         run: |
-          pytest --cov=./ tests/
+          coverage run -m pytest tests/
           coverage xml
+
+      - name: Install SonarScanner CLI
+        run: |
+          wget https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.8.0.2856-linux.zip
+          unzip sonar-scanner-cli-4.8.0.2856-linux.zip
+          mv sonar-scanner-4.8.0.2856-linux sonar-scanner
+          echo "$(pwd)/sonar-scanner/bin" >> $GITHUB_PATH
 
       - name: Run SonarScanner
         env:
