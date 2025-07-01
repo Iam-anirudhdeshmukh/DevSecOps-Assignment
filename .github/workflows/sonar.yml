@@ -35,6 +35,8 @@ jobs:
           args: >
             -Dsonar.projectKey=Iam-anirudhdeshmukh
             -Dsonar.organization=DevSecOps-Assignment
+            -Dsonar.branch=main
+            -Dsonar.language=python
             -Dsonar.python.coverage.reportPaths=coverage.xml
             -Dsonar.sources=.
             -Dsonar.host.url=https://sonarcloud.io
