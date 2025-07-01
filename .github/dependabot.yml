@@ -1,0 +1,25 @@
+# create .github/dependabot.yml
+version: 2
+updates:
+  # Monitor Python dependencies in requirements.txt
+  - package-ecosystem: "pip"
+    directory: "/"       # Location of requirements.txt
+    schedule:
+      interval: "daily"
+    open-pull-requests-limit: 5   # Set to a positive integer
+
+  # Monitor GitHub Actions workflows for security updates
+  - package-ecosystem: "github-actions"
+    directory: "/.github/workflows"
+    schedule:
+      interval: "weekly"
+      day: "sunday"
+      time: "00:00"
+      timezone: "Asia/Kolkata"
+    open-pull-requests-limit: 5
+  # Monitor Dockerfile for updates
+  - package-ecosystem: "docker"
+    directory: "/"       # Location of Dockerfile
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5   # Set to a positive integer
