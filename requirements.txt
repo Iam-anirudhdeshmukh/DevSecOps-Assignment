@@ -13,7 +13,7 @@ pylint>=2.17.0            # Static code analysis (SonarQube-compatible)
 python-sonarqube-api      # SonarQube API client for automation
 
 # === Dev/Security Tools ===
-bandit==1.7.7             # Secure code scanning (local linting only)
+bandit==1.8.5             # Secure code scanning (local linting only)
 safety>=2.3.0             # Dependency vulnerability scanning
 twine>=4.0.0              # Secure package upload to PyPI
 
