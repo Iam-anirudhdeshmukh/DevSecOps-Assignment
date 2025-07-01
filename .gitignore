@@ -1,1 +1,28 @@
 
+# .gitignore for DevSecOps Assignment
+# This file is used to specify files and directories that should be ignored by Git.
+*.pyc
+__pycache__/
+.env
+.venv/
+*.sqlite3
+*.log
+*.db
+*.coverage
+*.pyo
+*.pyd
+*.egg-info/
+dist/
+sonar.md
+coverage.xml
+htmlcov/
+.vscode/
+/sonar.md
+/.pytest_cache/
+# Ignore test results and reports
+test_results/
+reports/
+# Ignore configuration files that may contain sensitive information
+config.py
+settings.py 
+.scannerwork/
