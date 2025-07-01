@@ -33,11 +33,13 @@ jobs:
         uses: SonarSource/sonarcloud-github-action@v2
         with:
           args: >
-            -Dsonar.projectKey=iam-anirudhdeshmukh_DevSecOps-Assignment
-            -Dsonar.organization=iam-anirudhdeshmukh
-            -Dsonar.python.coverage.reportPaths=coverage.xml
+            -Dsonar.projectKey=Iam-anirudhdeshmukh_DevSecOps-Assignment
+            -Dsonar.organization=Iam-anirudhdeshmukh
+            -Dsonar.branch.name=main
             -Dsonar.sources=.
+            -Dsonar.python.coverage.reportPaths=coverage.xml
             -Dsonar.host.url=https://sonarcloud.io
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
 
