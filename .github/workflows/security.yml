@@ -176,9 +176,12 @@ jobs:
             echo "### 🐳 Docker Image Vulnerabilities 🐳" >> $GITHUB_STEP_SUMMARY
             echo "| Vulnerability ID | Package | Installed Version | Fixed Version | Severity | Type | Description |" >> $GITHUB_STEP_SUMMARY
             echo "|------------------|---------|-------------------|----------------|----------|------|-------------|" >> $GITHUB_STEP_SUMMARY
-            jq -r '.Results[].Vulnerabilities[] |
-              "| \(.VulnerabilityID) | \(.PkgName) | \(.InstalledVersion) | \(.FixedVersion // "N/A") | \(.Severity) | \(.Type) | \((.Description // "N/A") | gsub("\n"; " ")) |"' \
-              trivy-container-reports/image-results.json >> $GITHUB_STEP_SUMMARY
+            jq -r '
+              .Results[] 
+              | select(.Vulnerabilities != null)
+              | .Vulnerabilities[]
+              | "| \(.VulnerabilityID) | \(.PkgName) | \(.InstalledVersion) | \(.FixedVersion // "N/A") | \(.Severity) | \(.Type) | \((.Description // "N/A") | gsub("\n"; " ")) |"
+            ' trivy-container-reports/image-results.json >> $GITHUB_STEP_SUMMARY
           else
             echo "No vulnerabilities detected in Docker image." >> $GITHUB_STEP_SUMMARY
           fi
