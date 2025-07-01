@@ -5,18 +5,20 @@ flask>=2.2.0
 requests>=2.28.0
 PyYAML>=6.0
 pytest>=7.0.0
-pytest-cov>=3.0.0  # For test coverage reporting
-pytest-mock>=3.0.0  # For mocking in tests
-pytest-flask>=1.2.0  # Flask testing utilities
+pytest-cov>=3.0.0         # For test coverage reporting
+pytest-mock>=3.0.0        # For mocking in tests
+pytest-flask>=1.2.0       # Flask testing utilities
 coverage>=8.0.0
-pylint>=2.17.0           # Static code analysis (SonarQube-compatible)
-python-sonarqube-api     # SonarQube API client for automation
+pylint>=2.17.0            # Static code analysis (SonarQube-compatible)
+python-sonarqube-api      # SonarQube API client for automation
 
 # === Dev/Security Tools ===
-bandit==1.7.7            # Secure code scanning (local linting only)
+bandit==1.7.7             # Secure code scanning (local linting only)
+safety>=2.3.0             # Dependency vulnerability scanning
+twine>=4.0.0              # Secure package upload to PyPI
 
-safety>=2.3.0            # Dependency vulnerability scanning
-twine>=4.0.0            # Secure package upload to PyPI
+# === Optional Tools ===
+# Uncomment as needed for local development
 # tox>=4.0.0              # Testing tool for multiple environments
 # pre-commit>=3.0.0       # Git hooks for code quality checks
 # black>=23.0.0           # Code formatting
