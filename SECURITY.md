@@ -26,4 +26,6 @@ We aim to respond to all vulnerability reports within **48 hours** and will work
 - Share proof-of-concept code, affected components, and steps to reproduce.
 - If applicable, mention whether it affects production or just development.
 
+
 Thank you for helping us improve the security of this project!
+
