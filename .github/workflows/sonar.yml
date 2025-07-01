@@ -33,8 +33,8 @@ jobs:
         uses: SonarSource/sonarcloud-github-action@v2
         with:
           args: >
-            -Dsonar.projectKey=Iam-anirudhdeshmukh
-            -Dsonar.organization=DevSecOps-Assignment
+            -Dsonar.projectKey=iam-anirudhdeshmukh
+            -Dsonar.organization=iam-anirudhdeshmukh:DevSecOps-Assignment
             -Dsonar.branch=main
             -Dsonar.language=python
             -Dsonar.python.coverage.reportPaths=coverage.xml
