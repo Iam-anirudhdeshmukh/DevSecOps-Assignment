@@ -4,9 +4,11 @@ on:
   push:
     branches:
       - main
+      - sca-pipeline
   pull_request:
     branches:
       - main
+      - sca-pipeline
 
 jobs:
   security_scan:
