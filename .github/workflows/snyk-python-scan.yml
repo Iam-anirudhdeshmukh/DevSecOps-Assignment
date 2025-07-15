@@ -1,5 +1,5 @@
 name: Python Snyk Scan + SBOM Analysis
-
+# This workflow scans Python projects for vulnerabilities using Snyk, generates a Software Bill of Materials (SBOM) with Syft, and scans the SBOM with Grype. 
 on:
   push:
     branches:
