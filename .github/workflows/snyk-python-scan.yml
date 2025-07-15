@@ -33,7 +33,7 @@ jobs:
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
-          args: test --file=requirements.txt --fail-on=all
+          args: test --file=requirements.txt --package-manager=pip --fail-on=all 
         continue-on-error: false
 
       - name: Install Syft & Grype
