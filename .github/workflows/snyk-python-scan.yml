@@ -29,11 +29,12 @@ jobs:
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
       - name: Run Snyk to scan Python dependencies
-        uses: snyk/actions/snyk@v1
+        uses: snyk/actions/python@master
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
-          command: test --file=requirements.txt --fail-on=all
+          args: test --file=requirements.txt --fail-on=all
+        continue-on-error: false
 
       - name: Install Syft & Grype
         run: |
