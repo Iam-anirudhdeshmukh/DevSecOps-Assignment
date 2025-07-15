@@ -33,7 +33,7 @@ jobs:
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
-          command: test --fail-on=high
+          command: test --fail-on=upgradable
 
       - name: Install Syft & Grype
         run: |
