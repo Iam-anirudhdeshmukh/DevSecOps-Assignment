@@ -19,7 +19,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.x'  # Adjust this to your project’s Python version
+          python-version: '3.11'
 
       - name: Install dependencies
         run: |
@@ -31,7 +31,7 @@ jobs:
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
-          command: test --fail-on=high  # Fail workflow if high or critical vulnerabilities are found
+          command: test --fail-on=high
 
       - name: Install Syft & Grype
         run: |
