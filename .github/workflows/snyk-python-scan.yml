@@ -1,4 +1,4 @@
-name: Python Snyk Scan + SBOM Analysis
+name: Python Snyk Scan + SBOM Analysis (Docker)
 
 on:
   push:
@@ -28,7 +28,8 @@ jobs:
           python -m pip install --upgrade pip
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
-      - name: Run Snyk to scan Python dependencies (Docker)
+      # Run Snyk CLI Docker container to test Python dependencies
+      - name: Run Snyk test for Python dependencies
         run: |
           docker run --rm \
             -v ${{ github.workspace }}:/app \
@@ -48,9 +49,11 @@ jobs:
       - name: Scan SBOM with Grype
         run: grype sbom:sbom.json -o table
 
+      # Upload SBOM to Snyk using Docker image
       - name: Upload SBOM to Snyk
-        env:
-          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         run: |
-          pip install snyk
-          snyk sbom upload sbom.json
+          docker run --rm \
+            -v ${{ github.workspace }}:/app \
+            -w /app \
+            -e SNYK_TOKEN=${{ secrets.SNYK_TOKEN }} \
+            snyk/snyk:docker sbom upload sbom.json
