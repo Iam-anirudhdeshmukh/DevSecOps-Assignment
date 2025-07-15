@@ -1,10 +1,14 @@
-name: Python Snyk Scan + SBOM Analysis (Docker)
+name: Python Snyk Scan + SBOM Analysis
 
 on:
   push:
-    branches: [main, sca-pipeline]
+    branches:
+      - main
+      - sca-pipeline
   pull_request:
-    branches: [main, sca-pipeline]
+    branches:
+      - main
+      - sca-pipeline
 
 jobs:
   security_scan:
@@ -24,13 +28,15 @@ jobs:
           python -m pip install --upgrade pip
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
-      - name: Snyk Python test (via Docker)
+      - name: Run Snyk to scan Python dependencies (using Docker Node image)
         run: |
           docker run --rm \
             -v ${{ github.workspace }}:/app \
+            -w /app \
             -e SNYK_TOKEN=${{ secrets.SNYK_TOKEN }} \
-            snyk/snyk:docker \
-            test --file=requirements.txt --package-manager=pip --fail-on=all
+            node:18-alpine sh -c "\
+              npm install -g snyk && \
+              snyk test --file=requirements.txt --package-manager=pip --fail-on=all"
         continue-on-error: false
 
       - name: Install Syft & Grype
@@ -44,9 +50,8 @@ jobs:
       - name: Scan SBOM with Grype
         run: grype sbom:sbom.json -o table
 
-      - name: Upload SBOM to Snyk (via pip CLI)
-        run: |
-          pip install snyk
-          snyk sbom upload sbom.json
-        env:
-          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      - name: Upload SBOM artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: sbom-json
+          path: sbom.json
