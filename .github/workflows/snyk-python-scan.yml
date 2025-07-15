@@ -4,11 +4,11 @@ on:
   push:
     branches:
       - main
-      - sca-pipeline
+      - sca-assignment
   pull_request:
     branches:
       - main
-      - sca-pipeline
+      - sca-assignment
 
 jobs:
   snyk-sca-sbom-python:
