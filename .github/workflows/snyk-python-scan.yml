@@ -56,4 +56,5 @@ jobs:
             -v ${{ github.workspace }}:/app \
             -w /app \
             -e SNYK_TOKEN=${{ secrets.SNYK_TOKEN }} \
-            snyk/snyk:docker sbom upload sbom.json
+            snyk/snyk:docker monitor --sbom-file=sbom.json
+          
