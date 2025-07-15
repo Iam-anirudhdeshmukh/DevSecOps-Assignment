@@ -45,3 +45,8 @@ jobs:
 
       - name: Scan SBOM with Grype
         run: grype sbom:sbom.json -o table
+
+      - name: Upload SBOM to Snyk
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        run: snyk sbom upload sbom.json
