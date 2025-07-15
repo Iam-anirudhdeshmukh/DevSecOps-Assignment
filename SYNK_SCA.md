@@ -111,8 +111,7 @@ jobs:
         with:
           name: sbom
           path: sbom.json
----
----
+```
 
 ## 4. 📂 Output Artifacts
 
