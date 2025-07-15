@@ -1,0 +1,16 @@
+# Snyk Python Scan - Local Instructions
+
+1. Install Snyk CLI:
+   brew install snyk/tap/snyk
+
+2. Authenticate:
+   snyk auth
+
+3. Navigate to project directory:
+   cd <<path>>
+
+4. Run a scan:
+   snyk test --file=requirements.txt --package-manager=pip --fail-on=upgradable
+
+5. (Optional) Monitor project:
+   snyk monitor --file=requirements.txt --package-manager=pip
