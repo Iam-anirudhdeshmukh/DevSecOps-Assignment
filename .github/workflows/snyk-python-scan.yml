@@ -51,8 +51,3 @@ jobs:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         run: snyk sbom upload sbom.json
 
-      - name: Upload Snyk results
-        uses: actions/upload-artifact@v3
-        with:
-          name: snyk-results
-          path: snyk-results.json
