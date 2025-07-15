@@ -28,15 +28,13 @@ jobs:
           python -m pip install --upgrade pip
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
-      - name: Run Snyk to scan Python dependencies (using Docker Node image)
+      - name: Run Snyk to scan Python dependencies (Docker)
         run: |
           docker run --rm \
             -v ${{ github.workspace }}:/app \
             -w /app \
             -e SNYK_TOKEN=${{ secrets.SNYK_TOKEN }} \
-            node:18-alpine sh -c "\
-              npm install -g snyk && \
-              snyk test --file=requirements.txt --package-manager=pip --fail-on=all"
+            snyk/snyk:docker test --file=requirements.txt --package-manager=pip --fail-on=all
         continue-on-error: false
 
       - name: Install Syft & Grype
@@ -50,8 +48,9 @@ jobs:
       - name: Scan SBOM with Grype
         run: grype sbom:sbom.json -o table
 
-      - name: Upload SBOM artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: sbom-json
-          path: sbom.json
+      - name: Upload SBOM to Snyk
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        run: |
+          pip install snyk
+          snyk sbom upload sbom.json
