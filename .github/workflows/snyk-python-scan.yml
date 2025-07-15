@@ -34,7 +34,7 @@ jobs:
             -v ${{ github.workspace }}:/app \
             -w /app \
             -e SNYK_TOKEN=${{ secrets.SNYK_TOKEN }} \
-            snyk/snyk:docker test --file=requirements.txt --fail-on=all
+            snyk/snyk:docker test --file=requirements.txt
         continue-on-error: false
 
       - name: Install Syft & Grype
