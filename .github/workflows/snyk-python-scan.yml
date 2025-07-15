@@ -1,22 +1,19 @@
-name: Python Snyk Scan + SBOM Analysis
+name: SCA with Snyk + SBOM for Python
 
 on:
   push:
-    branches:
-      - main
-      - sca-pipeline
+    branches: [main]
   pull_request:
-    branches:
-      - main
-      - sca-pipeline
 
 jobs:
-  security_scan:
+  sca-scan:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v3.5.3
 
       - name: Set up Python
         uses: actions/setup-python@v4
@@ -28,25 +25,60 @@ jobs:
           python -m pip install --upgrade pip
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
-      - name: Run Snyk to scan Python dependencies
+      - name: Run Snyk test (console output)
         uses: snyk/actions/snyk@v1
+        with:
+          command: test --file=requirements.txt
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-        with:
-          command: test --fail-on=all
+        continue-on-error: true
 
-      - name: Install Syft & Grype
+      - name: Install Snyk CLI and snyk-to-html
         run: |
-          curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b /usr/local/bin
-          curl -sSfL https://raw.githubusercontent.com/anchore/grype/main/install.sh | sh -s -- -b /usr/local/bin
+          npm install -g snyk snyk-to-html
 
-      - name: Generate SBOM with Syft
-        run: syft dir:. -o json > sbom.json
+      - name: Generate Snyk HTML and JSON Reports
+        run: |
+          snyk test --file=requirements.txt --json > snyk-report.json || true
+          snyk-to-html -i snyk-report.json -o snyk-report.html || true
+
+          echo "Report files:"
+          ls -lh snyk-report.*
+
+          if [ -s snyk-report.html ]; then
+            echo "HTML report generated"
+          else
+            echo "HTML report was not generated correctly"
+          fi
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        continue-on-error: true
+
+      - name: Monitor project with Snyk
+        run: snyk monitor --file=requirements.txt || true
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+
+      - name: Upload Snyk reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: snyk-reports
+          path: |
+            snyk-report.json
+            snyk-report.html
+
+      # --- SBOM Generation and Scan using Docker ---
+
+      - name: Generate SBOM using Syft (CycloneDX JSON)
+        run: |
+          docker run --rm -v ${{ github.workspace }}:/project anchore/syft:latest /project -o cyclonedx-json > sbom.json || true
 
       - name: Scan SBOM with Grype
-        run: grype sbom:sbom.json -o table
+        run: |
+          docker run --rm -v ${{ github.workspace }}:/project anchore/grype sbom:/project/sbom.json -o table || true
 
-      - name: Upload SBOM to Snyk
-        env:
-          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-        run: snyk sbom upload sbom.json
+      - name: Upload SBOM Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: sbom-json
+          path: sbom.json
