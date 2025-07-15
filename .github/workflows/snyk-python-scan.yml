@@ -29,11 +29,11 @@ jobs:
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
       - name: Run Snyk to scan Python dependencies
-        uses: snyk/actions@v1
+        uses: snyk/actions@master
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
-          command: test --fail-on=upgradable
+          command: test --fail-on=high
 
       - name: Install Syft & Grype
         run: |
@@ -45,9 +45,3 @@ jobs:
 
       - name: Scan SBOM with Grype
         run: grype sbom:sbom.json -o table
-
-      - name: Upload SBOM to Snyk
-        env:
-          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-        run: snyk sbom upload sbom.json
-
