@@ -1,16 +1,30 @@
-FROM python:3.11-slim
+# Stage 1: Build stage
+FROM python:3.11-alpine AS build
+
+RUN apk add --no-cache build-base libffi-dev openssl-dev
 
 WORKDIR /app
 
-# Copy requirements separately for better cache efficiency
 COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
 
-# Upgrade pip and install dependencies without cache
-RUN pip install --upgrade pip && \
-    pip install --no-cache-dir -r requirements.txt
+COPY . .
 
-# Copy application source code
-COPY src/test_app/ .
+# Stage 2: Final runtime stage
+FROM python:3.11-alpine
 
-# Use explicit CMD to run the application
-CMD ["python", "main.py"]
+# Create appuser group and user
+RUN addgroup -g 1001 appgroup && adduser -u 1001 -G appgroup -D -s /bin/sh appuser
+
+WORKDIR /app
+
+COPY --from=build /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
+COPY --from=build /app /app
+
+RUN chown -R appuser:appgroup /app && chmod -R 750 /app
+
+USER appuser
+
+EXPOSE 8080
+
+CMD ["python", "app.py"]
