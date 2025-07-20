@@ -11,13 +11,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+      
       - uses: docker/setup-buildx-action@v3
       
       - name: Build Docker image
         run: docker build -t devsecops-python-app:latest .
-      
+
+      - name: Create results directory
+        run: mkdir -p results
+
       - name: Run Trivy scan
-        uses: aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@v0.10.1
         with:
           image-ref: devsecops-python-app:latest
           format: json
@@ -32,4 +36,25 @@ jobs:
       - name: Print summary
         run: |
           echo "Trivy scan complete. Vulnerabilities summary:"
-          cat results/trivy-report.json | jq '.Results[].Vulnerabilities[] | {Severity, PkgName, VulnerabilityID}'
+          jq '.Results[].Vulnerabilities[] | {Severity, PkgName, VulnerabilityID}' results/trivy-report.json
+        shell: bash
+
+      - name: Generate GitHub Actions Summary Table
+        run: |
+          echo "## Trivy Vulnerability Scan Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Severity | Package Name | Vulnerability ID |" >> $GITHUB_STEP_SUMMARY
+          echo "| -------- | ------------ | ---------------- |" >> $GITHUB_STEP_SUMMARY
+          jq -r '.Results[].Vulnerabilities[] | "| \(.Severity) | \(.PkgName) | \(.VulnerabilityID) |"' results/trivy-report.json >> $GITHUB_STEP_SUMMARY
+        shell: bash
+
+      - name: Check for vulnerabilities
+        run: |
+          # Check if any vulnerabilities exist in any Results entry
+          if jq -e '[.Results[].Vulnerabilities | length] | any(. > 0)' results/trivy-report.json; then
+            echo "Vulnerabilities found. Failing the job."
+            exit 1
+          else
+            echo "No vulnerabilities found. Job succeeded."
+          fi
+        shell: bash
