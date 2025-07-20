@@ -1,4 +1,4 @@
-name: Build Hardened Docker Image
+name: Build Hardened Docker Image and Verify Python App
 
 on:
   push:
@@ -21,27 +21,25 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-        # Optional: Login to DockerHub if you want to push the image later 
-      - name: Login to DockerHub (optional)
+      - name: Login to DockerHub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Build Hardened Docker Image
-        run: |
-          docker build -t hardened-python-app:latest .
+        run: docker build -t hardened-python-app:latest .
 
       - name: Run container to verify
-        run: |
-          docker run --rm hardened-python-app:latest id
+        run: docker run --rm hardened-python-app:latest id
 
-      - name: Output workflow steps as table
+      - name: Output workflow summary table
         run: |
-          echo "| Step Name                     | Description                                      |" >> $GITHUB_STEP_SUMMARY
-          echo "|------------------------------|-------------------------------------------------|" >> $GITHUB_STEP_SUMMARY
-          echo "| Checkout code                | Checks out repository code                        |" >> $GITHUB_STEP_SUMMARY
-          echo "| Set up Docker Buildx         | Sets up Docker Buildx for advanced builds         |" >> $GITHUB_STEP_SUMMARY
-          echo "| Login to DockerHub (optional)| Logs in to DockerHub if credentials are present   |" >> $GITHUB_STEP_SUMMARY
-          echo "| Build Hardened Docker Image  | Builds the Docker image with hardening            |" >> $GITHUB_STEP_SUMMARY
-          echo "| Run container to verify      | Runs the built image to verify it works           |" >> $GITHUB_STEP_SUMMARY
+          echo "## Image Hardening Output Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Command                                  | What to Check For                          | Example Output / Result                 |" >> $GITHUB_STEP_SUMMARY
+          echo "|------------------------------------------|--------------------------------------------|-----------------------------------------|" >> $GITHUB_STEP_SUMMARY
+          echo "| docker build -t hardened-python-app .    | Minimal image, no secrets, no extra packages | Build completes, clean logs              |" >> $GITHUB_STEP_SUMMARY
+          echo "| docker run --rm hardened-python-app id   | Non-root user (uid ≠ 0)                     | uid=1000(appuser) gid=1000(appuser)     |" >> $GITHUB_STEP_SUMMARY
+          echo "| docker image inspect hardened-python-app | User is non-root, small size, no secrets   | JSON output shows \"User\": \"appuser\"  |" >> $GITHUB_STEP_SUMMARY
+          echo "| docker run --rm -p 8080:8080 ...          | App runs, no errors, no sensitive logs      | App starts, listens on 8080              |" >> $GITHUB_STEP_SUMMARY
