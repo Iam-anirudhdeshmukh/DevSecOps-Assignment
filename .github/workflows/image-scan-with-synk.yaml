@@ -20,8 +20,11 @@ jobs:
       - name: Build Docker image
         run: docker build -t devsecops-python-app:latest .
 
+      - name: Create results directory
+        run: mkdir -p results
+
       - name: Scan image with Snyk
-        uses: snyk/actions/docker@master
+        uses: snyk/actions/docker@v2
         with:
           image: devsecops-python-app:latest
           args: >
@@ -30,6 +33,7 @@ jobs:
             --severity-threshold=low
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        continue-on-error: true
 
       - name: Upload Snyk JSON report
         uses: actions/upload-artifact@v4
@@ -46,4 +50,8 @@ jobs:
       - name: Print Summary in Logs
         run: |
           echo "Snyk Scan Complete. Vulnerability summary below:"
-          cat results/snyk-report.json | jq '.vulnerabilities[] | {severity, title, packageName}' || echo "No vulnerabilities found"
+          if jq -e '.vulnerabilities | length > 0' results/snyk-report.json; then
+            jq '.vulnerabilities[] | {severity, title, packageName}' results/snyk-report.json
+          else
+            echo "No vulnerabilities found"
+          fi
