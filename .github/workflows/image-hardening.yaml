@@ -2,9 +2,13 @@ name: Build Hardened Docker Image
 
 on:
   push:
-    branches: [imagehardening-assignment]
+    branches:
+      - main
+      - imagehardening-assignment
   pull_request:
-    branches: [main]
+    branches:
+      - main
+      - imagehardening-assignment
 
 jobs:
   build-hardened-image:
@@ -31,3 +35,13 @@ jobs:
       - name: Run container to verify
         run: |
           docker run --rm hardened-python-app:latest id
+
+      - name: Output workflow steps as table
+        run: |
+          echo "| Step Name                     | Description                                      |" >> $GITHUB_STEP_SUMMARY
+          echo "|------------------------------|-------------------------------------------------|” >> $GITHUB_STEP_SUMMARY
+          echo "| Checkout code                | Checks out repository code                        |" >> $GITHUB_STEP_SUMMARY
+          echo "| Set up Docker Buildx         | Sets up Docker Buildx for advanced builds         |" >> $GITHUB_STEP_SUMMARY
+          echo "| Login to DockerHub (optional)| Logs in to DockerHub if credentials are present   |" >> $GITHUB_STEP_SUMMARY
+          echo "| Build Hardened Docker Image  | Builds the Docker image with hardening            |" >> $GITHUB_STEP_SUMMARY
+          echo "| Run container to verify      | Runs the built image to verify it works           |" >> $GITHUB_STEP_SUMMARY

@@ -1,0 +1,15 @@
+# Build the Docker image from Dockerfile
+docker build -t hardened-python-app .
+
+# Run the container (default command)
+docker run --rm -p 8080:8080 hardened-python-app
+
+# Run with user and verify non-root execution
+docker run --rm hardened-python-app id
+
+# List image layers and size
+docker image inspect hardened-python-app
+
+# Tag and push to Docker Hub (optional)
+docker tag hardened-python-app dskystar/hardened-python-app:latest
+docker push dskystar/hardened-python-app:latest
