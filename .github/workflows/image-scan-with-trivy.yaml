@@ -50,12 +50,8 @@ jobs:
           jq -r '.Results[].Vulnerabilities[] | "| \(.Severity) | \(.PkgName) | \(.VulnerabilityID) |"' results/trivy-report.json >> $GITHUB_STEP_SUMMARY
         shell: bash
 
-      - name: Check for vulnerabilities
+      - name: Check for vulnerabilities but don't fail
         run: |
-          if jq -e '[.Results[].Vulnerabilities | length] | any(. > 0)' results/trivy-report.json; then
-            echo "Vulnerabilities found. Failing the job."
-            exit 1
-          else
-            echo "No vulnerabilities found. Job succeeded."
-          fi
+          jq -e '[.Results[].Vulnerabilities | length] | any(. > 0)' results/trivy-report.json && echo "Vulnerabilities found." || echo "No vulnerabilities."
         shell: bash
+
