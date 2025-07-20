@@ -1,0 +1,11 @@
+# Build the Docker image
+docker build -t devsecops-python-app:latest .
+
+# Create results folder
+mkdir -p results
+
+# Run Trivy container image scan (JSON output)
+trivy image --format json -o results/trivy-report.json devsecops-python-app:latest
+
+# (Optional) Show summary using jq - list severity and vulnerability title
+jq '.Results[].Vulnerabilities[] | {Severity, Title, PkgName}' results/trivy-report.json
