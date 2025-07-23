@@ -1,0 +1,21 @@
+stages:
+  - sast
+  - secret_detection
+  - dependency_scanning
+
+include:
+  - template: Security/SAST.gitlab-ci.yml
+  - template: Security/Secret-Detection.gitlab-ci.yml
+  - template: Security/Dependency-Scanning.gitlab-ci.yml
+
+variables:
+  GIT_DEPTH: 0
+
+sast:
+  stage: sast
+
+secret_detection:
+  stage: secret_detection
+
+dependency_scanning:
+  stage: dependency_scanning
