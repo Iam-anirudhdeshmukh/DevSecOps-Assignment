@@ -19,8 +19,21 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
         with:
-          ref: owaspzap-assignment
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Start Flask App in background
+        run: |
+          nohup python app.py &
+          sleep 10  # Wait for app to start
 
       - name: Run ZAP Full Scan
         id: zap
