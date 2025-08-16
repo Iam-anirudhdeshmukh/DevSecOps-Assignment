@@ -27,7 +27,7 @@ jobs:
     steps:
       # Step 1: Checkout the code
       - name: Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       # Step 2: Initialize CodeQL for Python
       - name: Initialize CodeQL
@@ -53,7 +53,7 @@ jobs:
     steps:
       # Step 1: Checkout the code
       - name: Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       # Step 2: Run Gitleaks to detect hardcoded secrets
       - name: Run Gitleaks Secret Scan
@@ -96,7 +96,7 @@ jobs:
     steps:
       # Step 1: Checkout the code
       - name: Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       # Step 2: Install Trivy package scanner
       - name: Install Trivy
@@ -133,7 +133,7 @@ jobs:
     steps:
       # Step 1: Checkout code for Docker context
       - name: Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       # Step 2: Set up Docker Buildx
       - name: Set up Docker Buildx
