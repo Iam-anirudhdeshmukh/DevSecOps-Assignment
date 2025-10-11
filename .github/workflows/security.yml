@@ -31,17 +31,17 @@ jobs:
 
       # Step 2: Initialize CodeQL for Python
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@v3
+        uses: github/codeql-action/init@v4
         with:
           languages: ${{ matrix.language }}
 
       # Step 3: Automatically build the code if needed
       - name: Perform CodeQL Autobuild
-        uses: github/codeql-action/autobuild@v3
+        uses: github/codeql-action/autobuild@v4
 
       # Step 4: Run CodeQL analysis and upload results to GitHub
       - name: Analyze Code with CodeQL
-        uses: github/codeql-action/analyze@v3
+        uses: github/codeql-action/analyze@v4
 
   # ==========================
   # Secret Detection with Gitleaks
